@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Socket.io</title>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <form id="chat">
+        <input type="text" name="username" placeholder="Digite seu usuário">
+        <div class="messages"></div>
+        <input type="text" name="message" placeholder="Digite sua mensagem">
+        <button type="submit">Enviar</button>
+    </form>
+
+    <script type="text/javascript">
+        var socket = io('http://192.168.0.15:3000');
+
+        function renderMessage(message){
+            $('.messages').append('<div class="message"><strong>'+message.author+'</strong> : '+message.message+'</div>')
+        }
+
+        socket.on('previousMessages', function(messages){
+            for(message of messages){
+                renderMessage(message);
+            }
+        })
+
+        socket.on('receivedMessage', function(message){
+            renderMessage(message);
+        })
+
+        $('#chat').submit(function(event){
+            event.preventDefault();
+
+            var author = $('input[name=username]').val();
+            var message = $('input[name=message]').val();
+
+            if(author.length && message.length){
+                var messageObject = {
+                    author: author,
+                    message: message,
+                };
+                renderMessage(messageObject)
+                socket.emit('sendMessage',messageObject)
+
+                $('input[name=message]').val("");
+                $('input[name=message]').focus();
+                
+            }
+        });
+    </script>
+</body>
+</html>
